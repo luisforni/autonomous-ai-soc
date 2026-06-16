@@ -1,0 +1,19 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc libpq-dev curl libmagic1 libpcap-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml LICENSE README.md ./
+RUN mkdir -p core agents api \
+    && touch core/__init__.py agents/__init__.py api/__init__.py \
+    && pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir ".[dev]"
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
